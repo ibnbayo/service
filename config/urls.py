@@ -16,14 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from weather.views import ping
+from weather import views
+# from weather.views import ping
 
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('ping/', ping),
-
-    # path('weather/', include('weather.urls')),
+    path('ping/', views.ping, name = 'ping'),
+    path('forecast/<str:city>/', views.forecast, name='forecast'),
 
 ]
