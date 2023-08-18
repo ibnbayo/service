@@ -2,11 +2,13 @@ from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import ForecastSerializer
+from .utils import validate_date
+
 import requests
 import pathlib
 
 
-BASE_DIR = pathlib.Path(__file__).resolve().parent 
+BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 
 @api_view(['GET'])
 def ping(request):
@@ -23,7 +25,10 @@ def ping(request):
 
 
 @api_view(['GET'])
-def forecast(request, city):
+def forecast(request, city, at = None):
+  
+  if at and not validate_date(at):
+    return Response({"error": "Invalid date format"}, status=400)
 
   api_key = settings.OPENWEATHER_API_KEY
 
@@ -52,8 +57,6 @@ def forecast(request, city):
 
     serializer = ForecastSerializer(forecast_data)
     return Response(serializer.data)
-
-    # return Response(forecast_data)
 
   else:
     return Response({"error": "Error retrieving forecast"}, status=400)
