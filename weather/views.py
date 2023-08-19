@@ -1,5 +1,6 @@
 from django.conf import settings
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import ForecastSerializer
 
@@ -13,6 +14,7 @@ BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def ping(request):
     """
     Endpoint to check service health and version.
@@ -26,6 +28,7 @@ def ping(request):
     return Response(data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def forecast(request, city):
     """
     Endpoint to fetch weather forecast for a city.
