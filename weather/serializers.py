@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 class ForecastSerializer(serializers.Serializer):
-
+    
     clouds = serializers.CharField(max_length=20)
     humidity = serializers.CharField(max_length=10)
     pressure = serializers.CharField(max_length=10) 
@@ -24,3 +24,4 @@ class ForecastSerializer(serializers.Serializer):
             data['pressure'] = str(round(instance['main']['pressure'] / 10)) + ' hPa'
             data['temperature'] = str(round(instance['main']['temp'])) + '°C'
         return data
+
