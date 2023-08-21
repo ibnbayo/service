@@ -104,7 +104,7 @@ cp .env.example .env
  5. Set your OpenWeatherMap API key and secret in .env
 
  6. Run the Docker Container
- 
+
  ```bash
 docker run -d -p 8080:8080 --env-file .env weatherapi
 ```
@@ -162,51 +162,6 @@ Authentication
 
 The `/forecast/<city>` and `/ping` endpoints are secured with Basic Authentication. Use user `admin` and password `secret` to access.
 
-Deployment
---------------
-
-The service is deployed to Google Cloud Run. 
-
-Testing
------------
-Test coverage of views is 100%. 
-Caveat: Tests need to be rewritten to factor in authentication for endpoints.
-Run tests with `pytest`. 
-
-
-To Do
------------
-
-The `/forecast/<city>` endpoint should also take an `at` query string parameter that will
-return the weather forecast for a specific date or datetime. The `at`
-parameter should accept both date and datetime stamps in the [ISO
-8601](https://en.wikipedia.org/wiki/ISO_8601) format. The service should
-respect time zone offsets.
-
-```bash
-$ curl -si http://localhost:8080/forecast/london/?at=2018-10-14T14:34:40+0100
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-{
-    "clouds": "sunny",
-    "humidity": "12.34%",
-    "pressure": "1000.51 hPa",
-    "temperature": "34.4C"
-}
-
-$ curl -si http://localhost:8080/forecast/london/?at=2018-10-14
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-{
-    "clouds": "overcast",
-    "humidity": "20.6%",
-    "pressure": "1014.51 hPa",
-    "temperature": "28.0C"
-}
-```
-
 ### Errors
 
 When no data is found or the endpoint is invalid the service responds
@@ -256,6 +211,53 @@ Content-Type: application/json; charset=utf-8
 |-------------|-----------------------------------------|
 | 404         | City not found or invalid endpoint      |
 | 500         | Internal server error                   |
+
+
+Testing
+-----------
+Test coverage of views is 100%. 
+Caveat: Tests need to be rewritten to factor in authentication for endpoints.
+Run tests with `pytest`. 
+
+Deployment
+--------------
+
+The service is deployed to Google Cloud Run. 
+
+To Do
+-----------
+
+The `/forecast/<city>` endpoint should also take an `at` query string parameter that will
+return the weather forecast for a specific date or datetime. The `at`
+parameter should accept both date and datetime stamps in the [ISO
+8601](https://en.wikipedia.org/wiki/ISO_8601) format. The service should
+respect time zone offsets.
+
+```bash
+$ curl -si http://localhost:8080/forecast/london/?at=2018-10-14T14:34:40+0100
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+{
+    "clouds": "sunny",
+    "humidity": "12.34%",
+    "pressure": "1000.51 hPa",
+    "temperature": "34.4C"
+}
+
+$ curl -si http://localhost:8080/forecast/london/?at=2018-10-14
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+{
+    "clouds": "overcast",
+    "humidity": "20.6%",
+    "pressure": "1014.51 hPa",
+    "temperature": "28.0C"
+}
+```
+
+
 
 
 
