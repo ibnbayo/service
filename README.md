@@ -59,7 +59,7 @@ cd <project_folder>
 `cp .env.example .env`
 
  5. Set your OpenWeatherMap API key and secret in .env
- 
+
  6. Run the Docker Container
 `docker run -d -p 8080:8080 --env-file .env weatherapi`
 
@@ -124,7 +124,9 @@ The service is deployed to Google Cloud Run.
 
 Testing
 -----------
-
+Test coverage of views is 100%. 
+Caveat: Tests need to be rewritten to factor in authentication for endpoints.
+Run tests with `pytest`. 
 
 
 To Do
@@ -203,12 +205,12 @@ Content-Type: application/json; charset=utf-8
 }
 ```
 
-## Error Responses
+**Error Responses** 
 
 | Status Code | Description                             |
 |-------------|-----------------------------------------|
-| 404         | City not found or invalid endpoint     |
-| 500         | Internal server error, no details leaked |
+| 404         | City not found or invalid endpoint      |
+| 500         | Internal server error                   |
 
 
 
