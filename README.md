@@ -4,8 +4,23 @@ Weather service
 ## Overview
 
 This is an HTTP weather service that provides information on weather. It uses the [openweathermap](https://www.openweathermap.org) API as a data source. The API requires an API key that can be obtained for free after [signing up](https://home.openweathermap.org/users/sign_up).
+
+
 Live link: [Weather Service](https://weatherapi-nuvrkturzq-nw.a.run.app)
 
+## Design
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant API
+    participant Openweather
+    User->>API: Request forecast for a city
+    API->>Openweather: Call Openweather API with city name
+    Openweather->>API: Return weather data for the city
+    API->>API: Process and format the weather data
+    API->>User: Display the forecast for the city
+```
 
 Getting it running
 ------------------
