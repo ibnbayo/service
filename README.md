@@ -10,60 +10,58 @@ Live link: [Weather Service](https://weatherapi-nuvrkturzq-nw.a.run.app)
 Getting it running
 ------------------
 
-## Getting it running
-
 ### Running via terminal
 
-# 1. Install Required Packages
+ 1. Install Required Packages
 ```bash
 sudo apt update
 sudo apt install python3 python3-pip python3-venv
 ```
-# 2. Install pipenv
+ 2. Install pipenv
 `pip3 install pipenv`
 
-# 3. Clone the Repository
+ 3. Clone the Repository
 git clone https://github.com/ibnbayo/service
 cd <project_folder>
 
-# 4. Install Dependencies with pipenv
+ 4. Install Dependencies with pipenv
 `pipenv install`
 
-# 5. Activate Virtual Environment
+ 5. Activate Virtual Environment
 `pipenv shell`
 
-# 6. Create a .env File
+ 6. Create a .env File
 Copy the .env.example file to .env and add your OpenWeatherMap API key and set secret to any value
 `cp .env.example .env`
 
-# 7. Run Migrations
+ 7. Run Migrations
 `python manage.py migrate`
 
-# 8. Run the Development Server
+ 8. Run the Development Server
 `python manage.py runserver`
 
 ### Running with Docker
 
-# 1. Install Docker
+ 1. Install Docker
 ```bash
 sudo apt update
 sudo apt install docker.io
 ```
 
-# 2. Clone the Repository
+ 2. Clone the Repository
 git clone https://github.com/ibnbayo/service
 cd <project_folder>
 
-# 3. Build the Docker Image
+ 3. Build the Docker Image
 `docker build -t weatherapi .`
 
-# 4. # Copy the .env.example file to .env
+ 4. Copy the .env.example file to .env
 `cp .env.example .env`
 
-# 5. Set your OpenWeatherMap API key and secret in .env
-
-# 6. Run the Docker Container
-docker run -d -p 8080:8080 --env-file .env weatherapi
+ 5. Set your OpenWeatherMap API key and secret in .env
+ 
+ 6. Run the Docker Container
+`docker run -d -p 8080:8080 --env-file .env weatherapi`
 
 
 
