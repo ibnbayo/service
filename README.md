@@ -231,35 +231,9 @@ The service is deployed to Google Cloud Run.
 To Do
 -----------
 
-The `/forecast/<city>` endpoint should also take an `at` query string parameter that will
-return the weather forecast for a specific date or datetime. The `at`
-parameter should accept both date and datetime stamps in the [ISO
-8601](https://en.wikipedia.org/wiki/ISO_8601) format. The service should
-respect time zone offsets.
+The `at` query string parameter for `/forecast/<city>` endpoint should respect time zone offsets.
+Also, it should return an error for past dates.
 
-```bash
-$ curl -si http://localhost:8080/forecast/london/?at=2018-10-14T14:34:40+0100
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-{
-    "clouds": "sunny",
-    "humidity": "12.34%",
-    "pressure": "1000.51 hPa",
-    "temperature": "34.4C"
-}
-
-$ curl -si http://localhost:8080/forecast/london/?at=2018-10-14
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-{
-    "clouds": "overcast",
-    "humidity": "20.6%",
-    "pressure": "1014.51 hPa",
-    "temperature": "28.0C"
-}
-```
 
 
 
