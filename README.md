@@ -73,6 +73,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+
 ### Running with Docker
 
  1. Install Docker
@@ -162,7 +163,9 @@ Authentication
 
 The `/forecast/<city>` and `/ping` endpoints are secured with Basic Authentication. Use user `admin` and password `secret` to access.
 
-### Errors
+
+Errors
+------
 
 When no data is found or the endpoint is invalid the service responds
 with `404` status code and a message:
@@ -215,47 +218,27 @@ Content-Type: application/json; charset=utf-8
 
 Testing
 -----------
-Test coverage of views is 100%. 
-Caveat: Tests need to be rewritten to factor in authentication for endpoints.
 Run tests with `pytest`. 
+Caveat: Tests need to be rewritten to factor in authentication for endpoints.
+
 
 Deployment
 --------------
 
 The service is deployed to Google Cloud Run. 
 
+
+[![Screenshot-2023-08-20-at-17-54-57.png](https://i.postimg.cc/rFQ3x8qt/Screenshot-2023-08-20-at-17-54-57.png)](https://postimg.cc/jLnMrYws)
+
+
 To Do
 -----------
 
-The `/forecast/<city>` endpoint should also take an `at` query string parameter that will
-return the weather forecast for a specific date or datetime. The `at`
-parameter should accept both date and datetime stamps in the [ISO
-8601](https://en.wikipedia.org/wiki/ISO_8601) format. The service should
-respect time zone offsets.
+The `at` query string parameter for `/forecast/<city>` endpoint should respect time zone offsets.
+Also, it should return an error for past dates.
 
-```bash
-$ curl -si http://localhost:8080/forecast/london/?at=2018-10-14T14:34:40+0100
 
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-{
-    "clouds": "sunny",
-    "humidity": "12.34%",
-    "pressure": "1000.51 hPa",
-    "temperature": "34.4C"
-}
 
-$ curl -si http://localhost:8080/forecast/london/?at=2018-10-14
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-{
-    "clouds": "overcast",
-    "humidity": "20.6%",
-    "pressure": "1014.51 hPa",
-    "temperature": "28.0C"
-}
-```
 
 
 
