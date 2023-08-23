@@ -57,18 +57,23 @@ pipenv install
 pipenv shell
 ```
 
- 6. Create a .env File
-Copy the .env.example file to .env and add your OpenWeatherMap API key and set secret to any value
+ 6. Create a .env File and add your environment variables
+Copy the .env.example file to .env, add your OpenWeatherMap API key and set secret to any value
 ```bash
 cp .env.example .env
 ```
 
- 7. Run Migrations
+ 7. Install requirements
+ ```bash
+pip install -r requirements.txt
+```
+
+ 8. Run Migrations
  ```bash
 python manage.py migrate
 ```
 
- 8. Run the Development Server
+ 9. Run the Development Server
  ```bash
 python manage.py runserver
 ```
