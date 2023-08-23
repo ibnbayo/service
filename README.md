@@ -73,6 +73,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+
 ### Running with Docker
 
  1. Install Docker
@@ -162,7 +163,9 @@ Authentication
 
 The `/forecast/<city>` and `/ping` endpoints are secured with Basic Authentication. Use user `admin` and password `secret` to access.
 
-### Errors
+
+Errors
+------
 
 When no data is found or the endpoint is invalid the service responds
 with `404` status code and a message:
@@ -215,14 +218,15 @@ Content-Type: application/json; charset=utf-8
 
 Testing
 -----------
-Test coverage of views is 100%. 
-Caveat: Tests need to be rewritten to factor in authentication for endpoints.
 Run tests with `pytest`. 
+Caveat: Tests need to be rewritten to factor in authentication for endpoints.
+
 
 Deployment
 --------------
 
 The service is deployed to Google Cloud Run. 
+
 
 To Do
 -----------
@@ -256,6 +260,8 @@ Content-Type: application/json; charset=utf-8
     "temperature": "28.0C"
 }
 ```
+
+
 
 
 

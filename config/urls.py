@@ -39,6 +39,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ping/', views.ping, name = 'ping'),
-    path('forecast/<str:city>/', views.forecast, name='forecast'),
+    path('forecast/<str:location>/', views.forecast, name='forecast'),
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
+

@@ -26,9 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1','weatherapi-nuvrkturzq-nw.a.run.app']
+DEBUG = True
+
+
+ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1','weatherapi-nuvrkturzq-nw.a.run.app']
+
 
 
 # Application definition
@@ -42,8 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'weather',
     'rest_framework',
+    'django_extensions',
     'drf_yasg',
-    'django_extensions'
+
 ]
 
 MIDDLEWARE = [
@@ -127,6 +131,7 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
@@ -136,3 +141,9 @@ REST_FRAMEWORK = {
 		'rest_framework.authentication.BasicAuthentication',
 	]
 }
+
+SWAGGER_SETTINGS = {
+   'USE_SESSION_AUTH': False,
+   "is_authenticated": False,
+}
+
