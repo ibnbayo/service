@@ -1,27 +1,28 @@
+import logging
+import pathlib
+from datetime import datetime, timezone
+
+import dateutil.parser as parser
+import requests
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 from .serializers import ForecastSerializer
-from datetime import datetime
-import datetime
-import re
-
-import time
-
-import dateutil.parser as parser
-
-import urllib.parse
-from urllib.parse import urlparse
-
-
-import requests
-import logging
-import pathlib
 
 logger = logging.getLogger(__name__)
-
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
+VERSION_FILE = BASE_DIR / 'VERSION'
+OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY
+OPENWEATHER_GEO_URL = 'http://api.openweathermap.org/geo/1.0/direct'
+OPENWEATHER_WEATHER_URL = 'https://api.openweathermap.org/data/2.5/weather'
+OPENWEATHER_TIMEMACHINE_URL = 'https://api.openweathermap.org/data/3.0/onecall/timemachine'
+
+HTTP_STATUS_OK = 200
+HTTP_STATUS_BAD_REQUEST = 400
+HTTP_STATUS_NOT_FOUND = 404
+HTTP_STATUS_INTERNAL_SERVER_ERROR = 500
 
 
 @api_view(['GET'])
@@ -30,7 +31,7 @@ def ping(request):
     """
     Endpoint to check service health and version.
     """
-    version = (BASE_DIR / 'VERSION').read_text().strip()
+    version = VERSION_FILE.read_text().strip()
     data = {
         "name": "weatherservice",
         "status": "ok",
@@ -42,11 +43,11 @@ def handle_error_response():
     """
     Handle unexpected errors and return a consistent error response.
     """
-    logging.error('An unexpected error occurred')
+    logger.error('An unexpected error occurred')
     return Response({
         'error': 'Something went wrong', 
         'error_code': 'internal_server_error'
-    }, status=500)
+    }, status=HTTP_STATUS_INTERNAL_SERVER_ERROR)
 
 def process_forecast_data(data):
     """
@@ -64,135 +65,119 @@ def process_forecast_data(data):
         "temperature": temperature
     }
 
-
-
 def validate_and_convert_datetime(raw_datetime):
-
-  try:
-    datetime_obj = parser.isoparse(raw_datetime)
-
-  except ValueError:
-    return {"error": "Invalid ISO date/time format"}, 400
-
-  if datetime_obj < datetime.now():
-    return {"error": "Datetime is in the past"}, 400
-  
-  timestamp = datetime_obj.timestamp()
-
-  return timestamp
-
-
-
-#error handling bing
-@api_view(['GET'])  
-def forecast(request, location):
-
-  url = request.build_absolute_uri()
-  parsed = urlparse(url)
-
-  query = urllib.parse.parse_qs(parsed.query)
-
-  if 'at' in query:
-    old_raw_datetime = query['at'][0]
-    raw_datetime = re.sub(r'\+\d{4}$', '', old_raw_datetime)
-
+    """
+    Validate and convert a raw datetime string to a timestamp.
+    Return a tuple of (timestamp, error) where error is None if valid.
+    """
     try:
-      parsed_datetime = parser.isoparse(raw_datetime) 
+        datetime_obj = parser.isoparse(raw_datetime)
     except ValueError:
-      return Response({
-        'error': 'Invalid date and time format',
-        'error_code': 'invalid_date_time'
-      }, status=400)
+        return None, {"error": "Invalid ISO date/time format"}
 
-    local_datetime = parsed_datetime.astimezone(datetime.timezone.utc)
-    datetimev = int(time.mktime(local_datetime.timetuple())) 
+    if datetime_obj < datetime.now():
+        return None, {"error": "Datetime is in the past"}
+  
+    timestamp = datetime_obj.timestamp()
+    return timestamp, None
 
-    geo_url = f"http://api.openweathermap.org/geo/1.0/direct?q={location}&limit=1&appid={settings.OPENWEATHER_API_KEY}"
+def get_location_coordinates(location):
+    """
+    Get the latitude and longitude of a location using the OpenWeather API.
+    Return a tuple of (lat, lon, error) where error is None if found.
+    """
+    geo_url = f"{OPENWEATHER_GEO_URL}?q={location}&limit=1&appid={OPENWEATHER_API_KEY}"
     
-
     try:
-      geo_data = requests.get(geo_url).json()
+        geo_data = requests.get(geo_url).json()
     except requests.exceptions.RequestException as e:
-      return handle_error_response()
+        return None, None, handle_error_response()
 
     if not geo_data or 'lat' not in geo_data[0] or 'lon' not in geo_data[0]:
-      return Response({
-        'error': f"Cannot find city '{location}'",
-        'error_code': 'city_not_found'
-      }, status=404)
+        return None, None, Response({
+            'error': f"Cannot find city '{location}'",
+            'error_code': 'city_not_found'
+        }, status=HTTP_STATUS_NOT_FOUND)
 
     lat = geo_data[0]['lat']
     lon = geo_data[0]['lon']
+    
+    return lat, lon, None
 
-    weather_url = f"https://api.openweathermap.org/data/3.0/onecall/timemachine?lat={lat}&lon={lon}&dt={datetimev}&appid={settings.OPENWEATHER_API_KEY}"
+def get_current_weather(lat, lon):
+    """
+    Get the current weather data for a given latitude and longitude using the OpenWeather API.
+    Return a tuple of (weather, error) where error is None if successful.
+    """
+    
+    weather_url = f"{OPENWEATHER_WEATHER_URL}?lat={lat}&lon={lon}&units=metric&appid={OPENWEATHER_API_KEY}"
     
     try:
-      weather_data = requests.get(weather_url).json()
+        weather_data = requests.get(weather_url).json()
+        
+        if weather_data['cod'] != HTTP_STATUS_OK:
+            return None, Response({
+                'error': weather_data['message'],
+                'error_code': weather_data['cod']
+            }, status=weather_data['cod'])
+        
+        weather = process_forecast_data(weather_data)
+        return weather, None
     except requests.exceptions.RequestException as e:
-      return handle_error_response()
+        return None, handle_error_response()
 
-    if not weather_data or 'data' not in weather_data or len(weather_data['data']) == 0:
-      return Response({
-        'error': f"Something went wrong",
-        'error_code': 'internal_server_error'
-      }, status=500)
-
-    weather = weather_data['data'][0]
-
-  else:
-
-
+def get_past_weather(lat, lon, timestamp):
+    """
+    Get the past weather data for a given latitude, longitude, and timestamp using the OpenWeather API.
+    Return a tuple of (weather, error) where error is None if successful.
+    """
+    
+    weather_url = f"{OPENWEATHER_TIMEMACHINE_URL}?lat={lat}&lon={lon}&dt={timestamp}&units=metric&appid={OPENWEATHER_API_KEY}"
+    
     try:
-        api_key = settings.OPENWEATHER_API_KEY
-        base_url = 'https://api.openweathermap.org/data/2.5/weather'
+        weather_data = requests.get(weather_url).json()
         
+        # Check if the response has data
+        if not weather_data or 'data' not in weather_data or len(weather_data['data']) == 0:
+            return None, Response({
+                'error': 'Something went wrong',
+                'error_code': 'internal_server_error'
+            }, status=HTTP_STATUS_INTERNAL_SERVER_ERROR)
 
-        params = {
-            'q': location,
-            'appid': api_key,
-            'units': 'metric', 
-        }
+        weather = process_forecast_data(weather_data['data'][0])
+        return weather, None
+    except requests.exceptions.RequestException as e:
+        return None, handle_error_response()
 
-        response = requests.get(base_url, params=params)
-
-        if response.status_code == 404:
-            error = response.json()['message']
-            return Response({
-                'error': f"Cannot find city '{location}'", 
-                'error_code': 'city_not_found'
-            }, status=404)
+@api_view(['GET'])  
+def forecast(request, location):
+    """
+    Endpoint to get the forecast data for a given location and optional datetime.
+    """
+    
+    query = request.GET
+    
+    # Validate and convert the datetime parameter if present
+    if 'at' in query:
+        raw_datetime = query['at']
+        # Use a different name for the local variable
+        local_timestamp, error = validate_and_convert_datetime(raw_datetime)
         
-        elif response.status_code == 400:
-            return Response({
-                'error': 'Date is in the past', 
-                'error_code': 'invalid_date'
-            }, status=400)
+        if error is not None:
+            return Response(error, status=HTTP_STATUS_BAD_REQUEST)
 
-        elif response.status_code == 200:
-            data = response.json()
-            forecast_data = process_forecast_data(data)
-            serializer = ForecastSerializer(forecast_data)
-            return Response(serializer.data)
+    lat, lon, error = get_location_coordinates(location)
 
-        else:
-            return handle_error_response()
-
-    except Exception as e:
-        return handle_error_response()
-
-
-  clouds = weather['weather'][0]['description']
-  humidity = str(weather['humidity']) + '%'
-  pressure = str(weather['pressure']) + ' hPa'  
-  temperature = str(round(weather['temp'])) + '°C'
-
-  forecast = {
-  'clouds': clouds,
-  'humidity': humidity,
-  'pressure': pressure,
-  'temperature': temperature   
-  }
-
-  serializer = ForecastSerializer(forecast)  
-
-  return Response(serializer.data)
+    if error is not None:
+        return error
+    
+    # Get the weather data for the coordinates and optional timestamp using the OpenWeather API
+    if 'at' in query:
+        weather, error = get_past_weather(lat, lon, local_timestamp)
+    else:
+        weather, error = get_current_weather(lat, lon)
+    
+    if error is not None:
+        return error
+    
+    return Response(weather, status=HTTP_STATUS_OK)
